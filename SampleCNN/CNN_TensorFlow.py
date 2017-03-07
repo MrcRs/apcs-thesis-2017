@@ -5,14 +5,15 @@ import math
 import matplotlib.pyplot as plt
 import tensorflow as tf
 import numpy as np
-from sklearn.metrics import confusion_matrix
+# from sklearn.metrics import confusion_matrix
 
 ### LOAD DATA ###
+print('Loading data ...')
 from tensorflow.examples.tutorials.mnist import input_data
 data = input_data.read_data_sets('data/MNIST/', one_hot=True)
 
 ### CONFIG NEURAL NETWORK ###
-
+print('Config Neural Network')
 # Convolutional Layer 1.
 filter_size1 = 5          # Convolution filters are 5 x 5 pixels.
 num_filters1 = 16         # There are 16 of these filters.
@@ -25,7 +26,7 @@ num_filters2 = 36         # There are 36 of these filters.
 fc_size = 128             # Number of neurons in fully-connected layer.
 
 ### CONFIG DATA DIMENSIONS ###
-
+print('config data dimensions')
 # We know that MNIST images are 28 pixels in each dimension.
 img_size = 28
 
@@ -42,7 +43,7 @@ num_channels = 1
 num_classes = 10
 
 ### CREATE TENSORFLOW GRAPH
-
+print('create tensorflow graph')
 # Initialize weights with random values
 def new_weights(shape):
     return tf.Variable(tf.truncated_normal(shape, stddev=0.05))
@@ -276,3 +277,4 @@ def optimize(num_iterations):
     # Print the time-usage.
     print("Time usage: " + str(timedelta(seconds=int(round(time_dif)))))
 
+optimize(99)
