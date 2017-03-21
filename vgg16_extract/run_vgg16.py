@@ -7,10 +7,10 @@ import cv2
 import vgg16
 import config
 
-sample_paths = glob.glob(config.DATA_DIR + '/*/*.jpg')
+sample_paths = glob.glob(config.DATA_DIR + '/aia/aia_anger/*.png')
 sample_paths.sort()
 f = open('samples_paths', 'w')
-f.writelines(samples_paths)
+f.writelines(sample_paths)
 f.close()
 
 flog = open('log.txt', 'w')
@@ -24,6 +24,7 @@ with tf.Session() as sess:
 
 	for path in sample_paths:
 		img = cv2.imread(path)
+		img = cv2.resize(img, (224, 224))
 		img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
 		img = img.reshape(1, 224, 224, 3)
 
@@ -37,4 +38,5 @@ with tf.Session() as sess:
 
 		count += 1
 		flog.write('%06d\t%s\n'%(count, path))
-		print '%06d\t%s'%(count, path)
+		print (count, '\t', path)
+		# print ('%06d\t%s', %(count, path))

@@ -15,7 +15,7 @@ class Vgg16:
             path = os.path.abspath(os.path.join(path, os.pardir))
             path = os.path.join(path, "vgg16.npy")
             vgg16_npy_path = path
-            print path
+            print (path)
 
         self.data_dict = np.load(vgg16_npy_path, encoding='latin1').item()
         print("npy file loaded")
@@ -32,15 +32,11 @@ class Vgg16:
         rgb_scaled = rgb * 255.0
 
         # Convert RGB to BGR
-        red, green, blue = tf.split(3, 3, rgb_scaled)
+        red, green, blue = tf.split(rgb_scaled, 3, 3)
         assert red.get_shape().as_list()[1:] == [224, 224, 1]
         assert green.get_shape().as_list()[1:] == [224, 224, 1]
         assert blue.get_shape().as_list()[1:] == [224, 224, 1]
-        bgr = tf.concat(3, [
-            blue - VGG_MEAN[0],
-            green - VGG_MEAN[1],
-            red - VGG_MEAN[2],
-        ])
+        bgr = tf.concat([blue - VGG_MEAN[0], green - VGG_MEAN[1], red - VGG_MEAN[2]], 3)
         assert bgr.get_shape().as_list()[1:] == [224, 224, 3]
 
         self.conv1_1 = self.conv_layer(bgr, "conv1_1")
