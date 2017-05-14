@@ -90,3 +90,9 @@ ENV/
 
 # Binary File
 *.npy
+
+# Data Folder
+dataset/
+
+# Output Folder
+out_npy/

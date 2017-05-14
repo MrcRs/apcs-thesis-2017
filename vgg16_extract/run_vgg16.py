@@ -7,7 +7,7 @@ import cv2
 import vgg16
 import config
 
-sample_paths = glob.glob(config.DATA_DIR + '/bonnie/bonnie_surprise/*.png')
+sample_paths = glob.glob(config.DATA_DIR + '/*/*/*.jpg')
 sample_paths.sort()
 f = open('samples_paths', 'w')
 f.writelines(sample_paths)
