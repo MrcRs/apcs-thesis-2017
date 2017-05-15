@@ -1,50 +1,14 @@
 import numpy as np
 import tensorflow as tf
 import os
-import glob
 import cv2
 import sqlite3
 
 import vgg16
 import config
 
-# sample_paths = glob.glob(config.AFLW_DATA_DIR + 'flickr/*/*.jpg')
-# sample_paths.sort()
-
-# file = open('sample_paths.txt', 'w')
-# file.writelines(sample_paths)
-# file.close()
-
-# count = 0
-
-# with tf.Session() as sess:
-# 	img_list = tf.placeholder("float", [1, 224, 224, 3])
-# 	vgg = vgg16.Vgg16(config.VGG16_NPY_PATH)
-
-# 	with tf.name_scope("content_vgg"):
-# 		vgg.build(img_list)
-
-# 	for path in sample_paths:
-# 		img = cv2.imread(path)
-# 		if img != None:
-# 			img = cv2.resize(img, (224, 224))
-# 			img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-# 			img = img.reshape(1, 224, 224, 3)
-
-# 			feat = sess.run(vgg.relu6, feed_dict={img_list: img})
-
-# 			dest_file = path.replace(config.AFLW_DATA_DIR, config.OUT_DIR)
-# 			parent_fd = os.path.dirname(dest_file)
-# 			if not os.path.exists(parent_fd):
-# 				os.makedirs(parent_fd)
-# 			np.save(dest_file, feat)
-
-# 			count += 1
-# 			if count % 10 == 0:
-# 				print(count, '\t', path)
-
-images_path = config.AFLW_DATA_DIR + 'flickr/'
-storing_path = config.AFLW_DATA_DIR + 'aflw/'
+images_path = config.AFLW_DATA_DIR + 'data/'
+storing_path = config.OUT_DIR + 'aflw/'
 sql_path = config.AFLW_DATA_DIR + 'aflw.sqlite'
 
 count = 0
@@ -67,6 +31,7 @@ with tf.Session() as sess:
 	for row in c.execute(query_string):
 		input_path = images_path + str(row[0])
 		output_path = storing_path + str(row[0])
+		print (input_path)
 
 		if os.path.isfile(input_path) == True:
 			image = cv2.imread(input_path)
@@ -97,10 +62,11 @@ with tf.Session() as sess:
 			cropped_image = np.copy(image[face_y:face_y+face_h, face_x:face_x+face_w])
 			cropped_image = cv2.resize(cropped_image, (224, 224))
 			cropped_image = cropped_image.reshape(1, 224, 224, 3)
+			print (cropped_image)
 
 			feat = sess.run(vgg.relu6, feed_dict={image_list: cropped_image})
 
-			dest_file = input_path.replace(config.AFLW_DATA_DIR, config.OUT_DIR + 'aflw/')
+			dest_file = input_path.replace(config.AFLW_DATA_DIR, storing_path)
 			parent_fd = os.path.dirname(dest_file)
 			if not os.path.exists(parent_fd):
 				os.makedirs(parent_fd)
@@ -110,15 +76,3 @@ with tf.Session() as sess:
 			count += 1
 			if count % 10 == 0:
 				print(count, '\t', input_path)
-
-			print ("Counter: " + str(count))
-			print ("iPath:    " + input_path)
-			print ("oPath:    " + output_path)
-			print ("Roll:    " + str(roll))
-			print ("Pitch:   " + str(pitch))
-			print ("Yaw:     " + str(yaw))
-			print ("x:       " + str(face_x))
-			print ("y:       " + str(face_y))
-			print ("w:       " + str(face_w))
-			print ("h:       " + str(face_h))
-			print ("")
