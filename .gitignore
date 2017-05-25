@@ -100,3 +100,6 @@ out_npy/
 
 # CSV File
 *.csv
+
+inception_v2/output/
+inception_v2/inception
