@@ -11,6 +11,10 @@ data_path = "../dataset/kaggle/"
 
 output_path = "output/kaggle/"
 
+file_path_cache_train = 'inception_kaggle_train.pkl'
+
+file_path_cache_test = 'inception_kaggle_test.pkl'
+
 image_size = 48
 
 num_channels = 3
@@ -36,25 +40,20 @@ def load_training_data():
 
 	with open(data_path + 'fer2013.csv', 'rt') as csvfile:
 		datareader = csv.reader(csvfile, delimiter =',')
-		headers = next(datareader)
 
 		i = 0
-		row = next(datareader)
-		while row[2] == 'Training':
-			msg = "\r- Processing image: {0:>6} / {1}".format(i+1, _num_images_train)
+		for row in datareader:
+			if row[2] == 'Training':
+				msg = "\r- Processing image: {0:>6} / {1}".format(i+1, _num_images_train)
 
-			sys.stdout.write(msg)
-			sys.stdout.flush()
+				sys.stdout.write(msg)
+				sys.stdout.flush()
 
-			pixels = np.fromstring(row[1], dtype=float, sep=' ')
-			image = np.concatenate((pixels, pixels, pixels))
-			image = image.reshape(image_size, image_size, num_channels)
-			images[i] = image
+				images[i], cls[i] = load_images_and_cls(row, file_path_cache_train)
 
-			cls[i] = row[0]
-
-			row = next(datareader)
-			i += 1
+				i += 1
+			if i == _num_images_train:
+				break
 
 	print()
 
@@ -72,31 +71,35 @@ def load_test_data():
 
 	with open(data_path + 'fer2013.csv', 'rt') as csvfile:
 		datareader = csv.reader(csvfile, delimiter =',')
-		headers = next(datareader)
-
-		row = next(datareader)
-		while (row[2] == 'Training'):
-			row = next(datareader)
 
 		i = 0
-		while row[2] == 'PublicTest':
-			msg = "\r- Processing image: {0:>6} / {1}".format(i+1, _num_images_test)
+		for row in datareader:
+			if row[2] == 'PrivateTest':
+				msg = "\r- Processing image: {0:>6} / {1}".format(i+1, _num_images_test)
+				sys.stdout.write(msg)
+				sys.stdout.flush()
 
-			sys.stdout.write(msg)
-			sys.stdout.flush()
+				images[i], cls[i] = load_images_and_cls(row, file_path_cache_test)
 
-			pixels = np.fromstring(row[1], dtype=float, sep=' ')
-			image = np.concatenate((pixels, pixels, pixels))
-			image = image.reshape(image_size, image_size, num_channels)
-			images[i] = image
-
-			cls[i] = row[0]
-
-			row = next(datareader)
-			i += 1
+				i += 1
+			if i == _num_images_train:
+				break
 
 	print()
 
 	return images, cls, one_hot_encoded(
 		class_numbers=cls,
 		num_classes=num_classes)
+
+def create_dir():
+	if not os.path.exists(output_path):
+		os.makedirs(output_path)
+
+def load_images_and_cls(row, pkl_path):
+	image = None
+	if os.path.exists(output_path + pkl_path) == False:
+		pixels = np.fromstring(row[1], dtype=float, sep=' ')
+		image = np.concatenate((pixels, pixels, pixels))
+		image = image.reshape(image_size, image_size, num_channels)
+
+	return image, row[0]

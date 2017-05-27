@@ -8,18 +8,16 @@ import inception
 
 import prettytensor as pt
 
-import kaggle
-from kaggle import num_classes, output_path, data_name
+import aflw as dataset
 
+### LOAD DATA FROM DATASET ###
 
-### LOAD DATA FOR Kaggle ###
-
-class_names = kaggle.load_class_names()
+class_names = dataset.load_class_names()
 
 print("Loading Training Images ...")
-images_train, cls_train, labels_train = kaggle.load_training_data()
+images_train, cls_train, labels_train = dataset.load_training_data()
 print("Loading Test Images ...")
-images_test, cls_test, labels_test = kaggle.load_test_data()
+images_test, cls_test, labels_test = dataset.load_test_data()
 
 ### DOWNLOAD INCEPTION MODEL ###
 
@@ -29,9 +27,11 @@ inception.maybe_download()
 model = inception.Inception()
 
 # CALCULATE TRANSFER-VALUES ###
+
+dataset.create_dir()
 from inception import transfer_values_cache
-file_path_cache_train = os.path.join(output_path, 'inception_kaggle_train.pkl')
-file_path_cache_test = os.path.join(output_path, 'inception_kaggle_test.pkl')
+file_path_cache_train = os.path.join(dataset.output_path, dataset.file_path_cache_train)
+file_path_cache_test = os.path.join(dataset.output_path, dataset.file_path_cache_test)
 
 print("Processing Inception transfer-values for training-images ...")
 
@@ -50,13 +50,13 @@ transfer_values_test = transfer_values_cache(cache_path=file_path_cache_test, im
 # Placeholder Variables
 transfer_len = model.transfer_len
 x = tf.placeholder(tf.float32, shape=[None, transfer_len], name='x')
-y_true = tf.placeholder(tf.float32, shape=[None, num_classes], name='y_true')
+y_true = tf.placeholder(tf.float32, shape=[None, dataset.num_classes], name='y_true')
 y_true_cls = tf.argmax(y_true, dimension=1)
 
 # Neural Network
 x_pretty = pt.wrap(x)	# Wrap the transfer-values as a Pretty Tensor object.
 with pt.defaults_scope(activation_fn=tf.nn.relu):
-	y_pred, loss = x_pretty.fully_connected(size=1024, name='layer_fc1').softmax_classifier(num_classes=num_classes, labels=y_true)
+	y_pred, loss = x_pretty.fully_connected(size=1024, name='layer_fc1').softmax_classifier(num_classes=dataset.num_classes, labels=y_true)
 
 # Optimization Method
 global_step = tf.Variable(initial_value=0, name='global_step', trainable=False)
@@ -76,8 +76,8 @@ session = tf.Session()
 
 saver = tf.train.Saver()
 
-if os.path.exists(output_path + 'kaggle.meta'):
-	saver.restore(sess=session, save_path=(output_path + data_name))
+if os.path.exists(dataset.output_path + dataset.data_name + '.meta'):
+	saver.restore(sess=session, save_path=(dataset.output_path + dataset.data_name))
 else:
 	session.run(tf.global_variables_initializer())
 
@@ -128,7 +128,7 @@ def optimize(num_iterations):
 			print(msg.format(i_global, batch_acc))
 
 		if (i_global % 1000 == 0) or (i == num_iterations - 1):
-			saver.save(session, output_path + data_name)
+			saver.save(session, dataset.output_path + dataset.data_name)
 			msg = ">> Save Model at Global Step: {0:>6} <<"
 			print(msg.format(i_global))
 			print_test_accuracy(show_example_errors=False, show_confusion_matrix=False)
@@ -143,8 +143,6 @@ def optimize(num_iterations):
 	print("Time usage: " + str(timedelta(seconds=int(round(time_dif)))))
 
 # Helper-func. for clculating classifications
-batch_size = 64 # Split the data-set in batches of this size to limit RAM usage.
-
 def predict_cls(transfer_values, labels, cls_true):
 	# Number of images.
 	num_images = len(transfer_values)
@@ -158,27 +156,28 @@ def predict_cls(transfer_values, labels, cls_true):
 	# There might be a more clever and Pythonic way of doing this.
 
 	# The starting index for the next batch is denoted i.
-	i = 0
-	correct = []
+	# i = 0
 
-	while i < num_images:
-		# The ending index for the next batch is denoted j.
-		j = min(i + batch_size, num_images)
+	# while i < num_images:
+	# 	# The ending index for the next batch is denoted j.
+	# 	j = min(i + batch_size, num_images)
 
-		# Create a feed-dict with the images and labels
-		# between index i and j.
-		feed_dict = {x: transfer_values[i:j], y_true: labels[i:j]}
+	# 	# Create a feed-dict with the images and labels
+	# 	# between index i and j.
+	# 	feed_dict = {x: transfer_values[i:j], y_true: labels[i:j]}
 
-		# Calculate the predicted class using TensorFlow.
-		cls_pred[i:j] = session.run(y_pred_cls, feed_dict=feed_dict)
-		correct.append(cls_true[i] == cls_pred[i])
+	# 	# Calculate the predicted class using TensorFlow.
+	# 	cls_pred[i:j] = session.run(y_pred_cls, feed_dict=feed_dict)
 
-		# Set the start-index for the next batch to the
-		# end-index of the current batch.
-		i = j
+	# 	# Set the start-index for the next batch to the
+	# 	# end-index of the current batch.
+	# 	i = j
+
+	feed_dict = {x: transfer_values, y_true: labels}
+	cls_pred = session.run(y_pred_cls, feed_dict=feed_dict)
 
 	# Create a boolean array whether each image is correctly classified.
-	# correct = (cls_true == cls_pred)
+	correct = (cls_true == cls_pred)
 
 	return correct, cls_pred
 
@@ -193,16 +192,7 @@ def classification_accuracy(correct):
 
 	# Return the classification accuracy
 	# and the number of correct classifications.
-
-	_sum = 0
-	_mean = 0.0
-	for i in correct:
-		_sum = _sum + i
-
-	_mean = _sum / len(correct)
-	return _mean, _sum
-
-	# return correct.mean(), correct.sum()
+	return correct.mean(), correct.sum()	
 
 # Helper-func. for calculating the classification accuracy
 def print_test_accuracy(show_example_errors=False, show_confusion_matrix=False):
@@ -233,7 +223,7 @@ def print_test_accuracy(show_example_errors=False, show_confusion_matrix=False):
 
 print_test_accuracy(show_example_errors=False, show_confusion_matrix=False)
 
-optimize(num_iterations=78000)
+optimize(num_iterations=100000)
 
 model.close()
 session.close()
