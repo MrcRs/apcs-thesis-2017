@@ -1,9 +1,0 @@
--------------------------------------------------------------------------------
-AFLW ChangeLog
--------------------------------------------------------------------------------
-
-2015-05-18 Added the campose table. Fixed computation of the pose and thus reran the campose and facepose calculation. Removed annotations of a few very strange faces. Fixed the meta information of a couple of faces
-2012-11-27 Corrected ~2k annotations (small faces) with zoom functionality in GUI. Annotation GUI; introduced face auto zoom, some minor bug fixes e.g. that some FeatureCoords couln't be deleted. Facedbsql; DeleteFacesByIdsQuery has been fixed that also the respective face rects and ellipses are deleted. Importers for other databases such as PUT, BioID, FaceTracer and LFPW are now available. Thus, new landmark types have been introduced.
-2012-01-11 Renamed image tar.gz archives. Corrected FacePose annot_type_id = 0 to 1 for 38 entries where pose was updated. See Table AnnotationType for the meaning of these values. Deleted -1 (means landmark not set or deleted) entries in FeatureCoords. 1738 entries were affected.
-2012-01-10 Updated sqlite3 db file and tools. Due to an error duplicated or even multiplied values in FeatureCoords occured. This was fixed. Thanks to Stephen Milborrow for pointing out this problem. 
-2011-12-23 First release of AFLW.
