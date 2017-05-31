@@ -16,7 +16,7 @@ file_path_cache_train = 'inception_aflw_train.pkl'
 
 file_path_cache_test = 'inception_aflw_test.pkl'
 
-image_size = 75
+image_size = 100
 
 num_channels = 3
 
@@ -53,13 +53,13 @@ def load_training_data():
 			image, cls[i] = load_images_and_cls(row, file_path_cache_train)
 			if image is not None:
 				image_h, image_w, dump = image.shape
-				images[i - _num_images_train, 0: image_h, 0: image_w] = image[0: image_h, 0:image_w]
+				images[i, 0: image_h, 0: image_w] = image[0: image_h, 0:image_w]
 
 			i += 1
 
 	print()
 
-	return images, cls, one_hot_encoded(class_numbers=cls, num_classes=num_classes)
+	return images, one_hot_encoded(class_numbers=cls, num_classes=num_classes)
 
 def load_test_data():
 	images = np.zeros(shape=[_num_images_test, image_size, image_size, num_channels], dtype=float)
@@ -89,7 +89,7 @@ def load_test_data():
 
 	print()
 
-	return images, cls, one_hot_encoded(class_numbers=cls, num_classes=num_classes)
+	return images, one_hot_encoded(class_numbers=cls, num_classes=num_classes)
 	
 def create_dir():
 	if not os.path.exists(output_path):
@@ -121,7 +121,7 @@ def load_images_and_cls(row, pkl_path):
 
 		image = image[face_y: face_y + face_h, face_x: face_x + face_w]
 		image_h, image_w, dump = image.shape
-		if (face_h > image_size or face_y > image_size):
+		if (image_h > image_size or image_w > image_size):
 			ratio = 0.0
 			dim = None
 			if image_h > image_w:

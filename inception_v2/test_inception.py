@@ -8,16 +8,16 @@ import inception
 
 import prettytensor as pt
 
-import aflw as dataset
+import celeb as dataset
 
 ### LOAD DATA FROM DATASET ###
 
 class_names = dataset.load_class_names()
 
 print("Loading Training Images ...")
-images_train, cls_train, labels_train = dataset.load_training_data()
+images_train, labels_train = dataset.load_training_data()
 print("Loading Test Images ...")
-images_test, cls_test, labels_test = dataset.load_test_data()
+images_test, labels_test = dataset.load_test_data()
 
 ### DOWNLOAD INCEPTION MODEL ###
 
@@ -64,7 +64,8 @@ optimizer = tf.train.AdamOptimizer(learning_rate=1e-4).minimize(loss, global_ste
 
 # Classification Accuracy
 y_pred_cls = tf.argmax(y_pred, dimension=1)
-correct_prediction = tf.equal(y_pred_cls, y_true_cls)
+# correct_prediction = tf.equal(y_pred_cls, y_true_cls)
+correct_prediction = tf.diag_part(tf.matmul(y_pred, tf.transpose(y_true)))
 accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
 
 # Create TensorFlow Session
@@ -143,7 +144,7 @@ def optimize(num_iterations):
 	print("Time usage: " + str(timedelta(seconds=int(round(time_dif)))))
 
 # Helper-func. for clculating classifications
-def predict_cls(transfer_values, labels, cls_true):
+def predict_cls(transfer_values, labels):
 	# Number of images.
 	num_images = len(transfer_values)
 
@@ -174,15 +175,16 @@ def predict_cls(transfer_values, labels, cls_true):
 	# 	i = j
 
 	feed_dict = {x: transfer_values, y_true: labels}
-	cls_pred = session.run(y_pred_cls, feed_dict=feed_dict)
+	prob_list = y_pred.eval({x: transfer_values}, session)
 
 	# Create a boolean array whether each image is correctly classified.
-	correct = (cls_true == cls_pred)
+	correct = np.matmul(prob_list, labels.transpose())
+	correct = np.diag(correct)
 
-	return correct, cls_pred
+	return correct
 
 def predict_cls_test():
-	return predict_cls(transfer_values = transfer_values_test, labels = labels_test, cls_true = cls_test)
+	return predict_cls(transfer_values = transfer_values_test, labels = labels_test)
 
 # Helper-functions for calculating the classification accuracy
 def classification_accuracy(correct):
@@ -192,25 +194,26 @@ def classification_accuracy(correct):
 
 	# Return the classification accuracy
 	# and the number of correct classifications.
-	return correct.mean(), correct.sum()	
+	return correct.mean()
 
 # Helper-func. for calculating the classification accuracy
 def print_test_accuracy(show_example_errors=False, show_confusion_matrix=False):
 
 	# For all the images in the test-set,
 	# calculate the predicted classes and whether they are correct.
-	correct, cls_pred = predict_cls_test()
+	correct = predict_cls_test()
 
 	# Classification accuracy and the number of correct classifications.
-	acc, num_correct = classification_accuracy(correct)
+	acc = classification_accuracy(correct)
 
 	# Number of images being classified.
 	num_images = len(correct)
 
 	# Print the accuracy.
-	msg = "Accuracy on Test-Set: {0:.1%} ({1} / {2})"
-	print(msg.format(acc, num_correct, num_images))
+	# print("Accuracy on Test-Set: " + str(acc * 100))
 
+	msg = "Accuracy on Test-Set: {0:>6.1%} ({1})"
+	print(msg.format(acc, num_images))
 	# Plot some examples of mis-classifications, if desired.
 	# if show_example_errors:
 	# 	print("Example errors:")
@@ -223,7 +226,7 @@ def print_test_accuracy(show_example_errors=False, show_confusion_matrix=False):
 
 print_test_accuracy(show_example_errors=False, show_confusion_matrix=False)
 
-optimize(num_iterations=100000)
+optimize(num_iterations=500000)
 
 model.close()
 session.close()

@@ -1,0 +1,3 @@
+
+The files "training.txt" and "testing.txt" include the according file list. Each line denotes a file, with the file name followed by the face bounding boxes, and the relation traits. The format is as follows:
+FILE_NAME LEFT_OF_FACE1 TOP_OF_FACE1 WIDTH_OF_FACE1 HEIGHT_OF_FACE1 LEFT_OF_FACE2 TOP_OF_FACE2 WIDTH_OF_FACE2 HEIGHT_OF_FACE2 dominated assured demonstrative involved friendly warm trusting competitive

@@ -57,7 +57,7 @@ def load_training_data():
 
 	print()
 
-	return images, cls, one_hot_encoded(
+	return images, one_hot_encoded(
 		class_numbers=cls, 
 		num_classes=num_classes)
 
@@ -87,7 +87,7 @@ def load_test_data():
 
 	print()
 
-	return images, cls, one_hot_encoded(
+	return images, one_hot_encoded(
 		class_numbers=cls,
 		num_classes=num_classes)
 
