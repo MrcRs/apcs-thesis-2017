@@ -103,5 +103,6 @@ out_npy/
 # CSV File
 *.csv
 
+dataset/
 inception_v2/output/
 inception_v2/inception
