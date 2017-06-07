@@ -174,7 +174,6 @@ def predict_cls(transfer_values, labels):
 	# 	# end-index of the current batch.
 	# 	i = j
 
-	feed_dict = {x: transfer_values, y_true: labels}
 	prob_list = y_pred.eval({x: transfer_values}, session)
 
 	# Create a boolean array whether each image is correctly classified.
