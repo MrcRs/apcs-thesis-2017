@@ -107,3 +107,5 @@ dataset/
 inception_v2/output/
 inception_v2/inception
 face_detection/
+
+inception_resnet_v2/output
