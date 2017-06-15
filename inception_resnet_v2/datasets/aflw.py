@@ -11,7 +11,7 @@ slim = tf.contrib.slim
 
 _FILE_PATTERN = 'aflw_%s_*.tfrecord'
 
-SPLITS_TO_SIZES = {'train': 21946, 'test': 2438}
+SPLITS_TO_SIZES = {'train': 13291, 'test': 1476}
 
 _NUM_CLASSES = 3
 
@@ -33,7 +33,7 @@ def get_split(split_name, dataset_dir, file_pattern=None, reader=None):
 
 	keys_to_features = {
 		'image/encoded': tf.FixedLenFeature((), tf.string, default_value=''),
-		'image/format': tf.FixedLenFeature((), tf.string, default_value=''),
+		'image/format': tf.FixedLenFeature((), tf.string, default_value='png'),
 		'image/class/label': tf.FixedLenFeature(
 			[], tf.int64, default_value=tf.zeros([], dtype=tf.int64))
 	}
