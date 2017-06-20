@@ -186,6 +186,5 @@ def main(_):
         eval_op=list(names_to_updates.values()),
         variables_to_restore=variables_to_restore)
 
-
 if __name__ == '__main__':
   tf.app.run()

@@ -6,23 +6,12 @@ import math
 import os
 import random
 import sys
-import sqlite3
 
 import tensorflow as tf
 
-from datasets import dataset_utils
+import dataset_utils
 
-_NUM_VALIDATION = 1476
-
-_RANDOM_SEED = 0
-
-_NUM_SHARDS = 13
-
-_CLASS_NAMES = {
-	'right',
-	'front',
-	'left'
-}
+_NUM_SHARDS = 7
 
 class ImageReader(object):
 	"""docstring for ImageReader"""
@@ -40,30 +29,20 @@ class ImageReader(object):
 		assert image.shape[2] == 3
 		return image
 
-def _get_filenames_and_classes(dataset_dir):
-	aflw_root = dataset_dir
-	directories = []
-	class_names = []
-	for filename in os.listdir(aflw_root):
-		path = os.path.join(aflw_root, filename)
-		if os.path.isdir(path):
-			directories.append(path)
-			class_names.append(filename)
-
-	photo_filenames = []
-	for directory in directories:
-		for filename in os.listdir(directory):
-			path = os.path.join(directory, filename)
-			photo_filenames.append(path)
-
-	return photo_filenames, sorted(class_names)
+def _get_filenames(file_db):
+	filenames = []
+	file = open(file_db, 'r')
+	for line in file:
+		row = line.split('.')
+		filenames.append(row[0])
+	return filenames
 
 def _get_dataset_filename(dataset_dir, split_name, shard_id):
 	output_filename = 'aflw_%s_%05d-of-%05d.tfrecord' % (
 		split_name, shard_id, _NUM_SHARDS)
 	return os.path.join(dataset_dir, output_filename)
 
-def _convert_dataset(split_name, filenames, class_names_to_ids, dataset_dir):
+def _convert_dataset(split_name, filenames, dataset_dir):
 	assert split_name in ['train', 'test']
 	num_per_shard = int(math.ceil(len(filenames) / float(_NUM_SHARDS)))
 
@@ -84,15 +63,14 @@ def _convert_dataset(split_name, filenames, class_names_to_ids, dataset_dir):
 							i+1, len(filenames), shard_id))
 						sys.stdout.flush()
 
-						image_data = tf.gfile.FastGFile(filenames[i], 'r').read()
-						height, width = image_reader.read_image_dims(sess, image_data)
+						for i in range(2):
+							image_data = tf.gfile.FastGFile(
+								dataset_dir + '/data/' + filenames[i] + '_' + str(i + 1) + '.png', 'r').read()
+							height, width = image_reader.read_image_dims(sess, image_data)
 
-						class_name = os.path.basename(os.path.dirname(filenames[i]))
-						class_id = class_names_to_ids[class_name]
-
-						example = dataset_utils.image_to_tfexample(
-							image_data, 'png', height, width, class_id)
-						tfrecord_writer.write(example.SerializeToString())
+							example = dataset_utils.image_to_tfexample(
+								image_data, 'png', height, width, -1)
+							tfrecord_writer.write(example.SerializeToString())
 	sys.stdout.write('\n')
 	sys.stdout.flush()
 
@@ -105,30 +83,17 @@ def _dataset_exists(dataset_dir):
 				return False
 	return True
 
-def run(dataset_dir):
-	if not tf.gfile.Exists(dataset_dir):
-		tf.gfile.MakeDirs(dataset_dir)
+def run():
+	dataset_dir = '../dataset/two_faces'
 
 	if _dataset_exists(dataset_dir):
 		print('Dataset files already exist. Exiting without re-creating them.')
 		return
 
-	# maybe download dataset here !!!
+	training_filenames = _get_filenames(os.path.join(dataset_dir, 'label/training.txt'))
+	testing_filenames = _get_filenames(os.path.join(dataset_dir, 'label/testing.txt'))
 
-	photo_filenames, class_names = _get_filenames_and_classes(dataset_dir)
-	class_names_to_ids = dict(zip(class_names, range(len(class_names))))
+	_convert_dataset('train', training_filenames, dataset_dir)
+	_convert_dataset('test', testing_filenames, dataset_dir)
 
-	random.seed(_RANDOM_SEED)
-	random.shuffle(photo_filenames)
-	training_filenames = photo_filenames[_NUM_VALIDATION:]
-	testing_filenames = photo_filenames[:_NUM_VALIDATION - 1]
-
-	_convert_dataset(
-		'train', training_filenames, class_names_to_ids, dataset_dir)
-	_convert_dataset(
-		'test', testing_filenames, class_names_to_ids, dataset_dir)
-
-	labels_to_class_names = dict(zip(range(len(class_names)), class_names))
-	dataset_utils.write_label_file(labels_to_class_names, dataset_dir)
-
-	print('\nFinished converting the AFLW dataset!')
+run()
