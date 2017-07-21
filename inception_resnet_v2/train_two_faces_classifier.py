@@ -22,7 +22,7 @@ cross_entropy = tf.nn.sigmoid_cross_entropy_with_logits(logits=logits, labels=y_
 cost = tf.reduce_mean(cross_entropy)
 
 global_step = tf.Variable(initial_value=0, name='global_step', trainable=False)
-optimizer = tf.train.GradientDescentOptimizer(learning_rate=0.001).minimize(cost, global_step)
+optimizer = tf.train.GradientDescentOptimizer(learning_rate=0.00001).minimize(cost, global_step)
 
 correct_prediction = (tf.diag_part(tf.matmul(y_pred, tf.transpose(y_true))) + tf.diag_part(tf.matmul(1 - y_pred, tf.transpose(1 - y_true)))) / 8
 accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
@@ -87,5 +87,5 @@ def print_accuracy():
 	# print("Recall on test-set: {0:.1%}".format(test_recall))
 
 print_accuracy()
-optimize(50000)
+optimize(500000)
 print_accuracy()

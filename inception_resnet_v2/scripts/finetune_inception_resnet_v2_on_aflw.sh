@@ -44,7 +44,7 @@ python download_and_convert_data.py \
 #   --checkpoint_path=${PRETRAINED_CHECKPOINT_DIR}/inception_resnet_v2_2016_08_30.ckpt \
 #   --checkpoint_exclude_scopes=InceptionResnetV2/Logits,InceptionResnetV2/AuxLogits  \
 #   --trainable_scopes=InceptionResnetV2/Logits,InceptionResnetV2/AuxLogits  \
-#   --max_number_of_steps=35000
+#   --max_number_of_steps=100
   # --learning_rate=0.01 \
   # --learning_rate_decay_type=fixed \
   # --optimizer=rmsprop \
@@ -71,9 +71,9 @@ python train_image_classifier.py \
   --dataset_dir=${DATASET_DIR} \
   --model_name=inception_resnet_v2 \
   --checkpoint_path=${TRAIN_DIR} \
-  --max_number_of_steps=10000 \
+  --max_number_of_steps=35000 \
   --batch_size=8 \
-  --learning_rate=0.001 
+  --learning_rate=0.0001 
   # --learning_rate_decay_type=fixed \
   # --save_interval_secs=60 \
   # --save_summaries_secs=60 \

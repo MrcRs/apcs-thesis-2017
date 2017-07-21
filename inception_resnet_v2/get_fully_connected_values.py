@@ -6,8 +6,8 @@ import numpy as np
 from nets import nets_factory
 from preprocessing import preprocessing_factory
 
-AFLW_TRAIN_MODEL_PATH = 'output/aflw-models/inception_resnet_v2/model.ckpt-35000'
-KAGGLE_TRAIN_MODEL_PATH = 'output/kaggle-models/inception_resnet_v2/model.ckpt-60000'
+AFLW_TRAIN_MODEL_PATH = 'output/aflw-models/inception_resnet_v2/all/model.ckpt-10000'
+KAGGLE_TRAIN_MODEL_PATH = 'output/kaggle-models/inception_resnet_v2/all/model.ckpt-15000'
 
 DATA_DIR = '../dataset/two_faces'
 TRAIN_DIR = 'output/two_faces/inception_resnet_v2'
@@ -109,8 +109,11 @@ def save_train_npy():
 		KAGGLE_TRAIN_MODEL_PATH, 
 		os.path.join(DATA_DIR, 'label/training.txt'), 
 		TRAIN_SIZE)
+
 	fc = np.concatenate((aflw_fc_value_list, kaggle_fc_value_list), axis=1)
 	np.save(os.path.join(TRAIN_DIR, 'fc_value_list_train.npy'), fc)
+
+	# np.save(os.path.join(TRAIN_DIR, 'fc_value_list_train.npy'), aflw_fc_value_list)
 
 	relation_trait_list = get_relation_traits_list(
 		8, os.path.join(DATA_DIR, 'label/training.txt'),TRAIN_SIZE)
@@ -131,6 +134,8 @@ def save_test_npy():
 
 	fc = np.concatenate((aflw_fc_value_list, kaggle_fc_value_list), axis=1)
 	np.save(os.path.join(TRAIN_DIR, 'fc_value_list_test.npy'), fc)
+
+	# np.save(os.path.join(TRAIN_DIR, 'fc_value_list_test.npy'), aflw_fc_value_list)
 
 	relation_trait_list = get_relation_traits_list(
 		8, os.path.join(DATA_DIR, 'label/testing.txt'),TEST_SIZE)
